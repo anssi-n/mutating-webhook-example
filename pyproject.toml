@@ -1,0 +1,9 @@
+[project]
+name = "mutating-webhook"
+version = "0.1.0"
+description = "Simple mutating webhook example for K8s cluster"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi[standard]>=0.121.0",
+]
