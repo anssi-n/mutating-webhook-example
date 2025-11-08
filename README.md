@@ -55,7 +55,7 @@ spec:
 EOF
 ```
 
-Approve the CSR and get signed certificate to a file.
+Approve the CSR and save signed certificate to a file.
 
 ```
 kubectl get csr

@@ -13,9 +13,9 @@ class JsonPatchOp(Enum):
     Add = "add"
     Remove = "remove"
     Replace = "replace"
-    Copy = "Copy"
-    Move = "Move"
-    Test = "Text"
+    Copy = "copy"
+    Move = "move"
+    Test = "text"
 
 class Operation(StrEnum):
     CREATE = "CREATE"
