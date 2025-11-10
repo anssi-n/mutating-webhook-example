@@ -35,7 +35,7 @@ openssl req -new -key mutating-webhook-server.key -subj "/CN=system:node:mutatin
 ```
 
 ```
-export SIGNING_REQUEST=$(cat webhook-server.csr | base64 | tr -d "\n")
+export SIGNING_REQUEST=$(cat mutating-webhook-server.csr | base64 | tr -d "\n")
 ```
 
 ```

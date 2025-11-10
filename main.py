@@ -2,7 +2,7 @@ import uvicorn
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from models import AdmissionReviewRequest, AdmissionReviewResponse,Response, JsonPatch, JsonPatchOp
+from models import AdmissionReviewRequest, AdmissionReviewResponse,Response, JsonPatch, JsonPatchOp, Object
 import os
 import random
 from app_logger import logger
@@ -17,9 +17,10 @@ except ValueError:
 
 @app.exception_handler(RequestValidationError)
 async def _(request: Request, exc: RequestValidationError):
-    exc_str = f'{exc}'.replace('\n', ' ').replace('   ', ' ')
-    logger.error(f"{request}: {exc_str}")
-    content = {'status_code': 422, 'message': exc_str, 'data': None}
+    logger.error(f"Unexpected AdmissionReview received. {request}: {str(exc).replace("\n", " ")}")
+    request_body = await request.json()
+    logger.info(f"Request body: {request_body}")
+    content = {'status_code': 422, 'message': exc, 'data': None}
     return JSONResponse(content=content, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
 @app.get("/health")
@@ -31,6 +32,13 @@ async def health(request: Request):
 async def webhook(request: AdmissionReviewRequest) -> AdmissionReviewResponse:
 
     logger.info(f"AdmissionReview request received: {request.model_dump_json()}")
+    metadata = request.request.object_.metadata if isinstance(request.request.object_, Object) else ""
+    spec = request.request.object_.spec if isinstance(request.request.object_, Object) else ""
+    data =  request.request.object_.data if isinstance(request.request.object_, Object) else "" 
+    logger.info(f"K8s object metadata from review request: {metadata}")
+    logger.info(f"K8s object spec from review request: {spec}")
+    logger.info(f"K8s object data from review request: {data}")
+
     if random.randint(1,100) <= flaky:
         response = AdmissionReviewResponse(apiVersion=request.apiVersion,
                                        kind=request.kind,
@@ -46,8 +54,8 @@ async def webhook(request: AdmissionReviewRequest) -> AdmissionReviewResponse:
                                                                          path="/metadata/labels/myMutatingWebhookLabel",
                                                                          value="mutating-webhook-was-here"),
                                                                 JsonPatch(op=JsonPatchOp.Add,
-                                                                         path="/metadata/labels/anotherMutatingWebhookLabel",
-                                                                         value="and-also-here")]))
+                                                                         path="/metadata/labels/mySecondMutatingWebhookLabel",
+                                                                         value="mutating-webhook-was-also-here")]))
     logger.info(f"AdmissionReview response sent: {response.model_dump_json()}")
     return response
 
